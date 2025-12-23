@@ -1,0 +1,237 @@
+extends ../layout
+
+//- -----------------------------------------------------------------------------
+//-  View: Show a single recipe with rating, image, ingredients, instructions,
+//-        author info, comments, and social-sharing controls.
+//-
+//-  Template variables provided by the controller:
+//-    • recipe       – recipe object (may be null if not found)
+//-    • user         – logged-in user object (or null)
+//-    • comments     – array of comment objects (may be empty)
+//-    • currentUrl   – absolute URL for current page (used in share links)
+//-    • baseUrl      – base URL of the site (used for Pinterest image link)
+//-
+//-  Client-side helper expected globally:
+//-    • initializeRatingSystem() – JS that wires up the interactive star input
+//- -----------------------------------------------------------------------------
+
+block content
+  .container.py-5
+    //- If we have a recipe, render its details; otherwise show a 404-style notice
+    if recipe
+      //- ===========================  HEADER  ===========================
+      .row.mb-4
+        .col-md-8
+          //- ----- Title and basic rating summary -----
+          h1.mb-3= recipe.title
+          .d-flex.align-items-center
+            .rating.me-3
+              - const rating = Math.round(recipe.avg_rating || 0)   // rounded avg
+              //- Render 5 stars: solid ≤ rating, outline otherwise
+              each val in [1, 2, 3, 4, 5]
+                if val <= rating
+                  i.fas.fa-star.text-warning
+                else
+                  i.far.fa-star.text-warning
+              //- Numeric average + total number of ratings
+              span.ms-1= (recipe.avg_rating || 0).toFixed(1)
+              span.text-muted.ms-1 (#{recipe.rating_count || 0} ratings)
+            //- Prep / cook times & servings
+            span.text-muted.me-3
+              i.fas.fa-clock.me-1
+              | Prep: #{recipe.prep_time} min
+            span.text-muted.me-3
+              i.fas.fa-clock.me-1
+              | Cook: #{recipe.cook_time} min
+            span.text-muted
+              i.fas.fa-utensils.me-1
+              | Serves: #{recipe.servings}
+
+          //- ----- Category badge & author / timestamp -----
+          .mt-3
+            span.badge.bg-primary.me-2= recipe.category
+            span.text-muted Posted by 
+              a(href="#") #{recipe.username}
+              |  on #{new Date(recipe.created_at).toLocaleDateString()}
+
+          //- ----- Social-sharing buttons (FB / X / Pinterest / email) -----
+          .mt-3
+            .d-flex.align-items-center
+              span.me-2 Share:
+              //- Facebook
+              a.btn.btn-sm.btn-outline-primary.rounded-circle.me-1(
+                href=`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
+                target="_blank",
+                title="Share on Facebook")
+                i.fab.fa-facebook-f
+              //- Twitter / X
+              a.btn.btn-sm.btn-outline-info.rounded-circle.me-1(
+                href=`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(recipe.title)}`,
+                target="_blank",
+                title="Share on Twitter")
+                i.fab.fa-twitter
+              //- Pinterest (uses recipe image)
+              a.btn.btn-sm.btn-outline-danger.rounded-circle.me-1(
+                href=`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(currentUrl)}&media=${encodeURIComponent(`${baseUrl}/${recipe.image}`)}&description=${encodeURIComponent(recipe.title)}`,
+                target="_blank",
+                title="Share on Pinterest")
+                i.fab.fa-pinterest-p
+              //- Email
+              a.btn.btn-sm.btn-outline-success.rounded-circle.me-1(
+                href=`mailto:?subject=${encodeURIComponent(`Recipe: ${recipe.title}`)}&body=${encodeURIComponent(`Check out this recipe: ${currentUrl}`)}`,
+                title="Share via Email")
+                i.fas.fa-envelope
+        
+        //- ----- Print / Edit / Delete controls (owner-only for edit & delete) -----
+        .col-md-4.text-md-end
+          .btn-group
+            a.btn.btn-outline-primary(href=`/recipes/${recipe.id}/print`, target="_blank")
+              i.fas.fa-print.me-1
+              | Print
+            if user && user.id === recipe.user_id
+              a.btn.btn-outline-primary(href=`/recipes/${recipe.id}/edit`)
+                i.fas.fa-edit.me-1
+                | Edit
+              form.d-inline(
+                action=`/recipes/${recipe.id}/delete`,
+                method="POST",
+                onsubmit="return confirm('Are you sure you want to delete this recipe?')")
+                button.btn.btn-outline-danger(type="submit")
+                  i.fas.fa-trash.me-1
+                  | Delete
+      
+      //- ===========================  MAIN  IMAGE + DESCRIPTION  ===========================
+      .row
+        //- Recipe image (fallback to generic placeholder)
+        .col-md-6.mb-4
+          img.img-fluid.rounded.recipe-detail-img(
+            src=recipe.image ? `/${recipe.image}` : "/images/default/default-recipe.jpg",
+            alt=recipe.title)
+        
+        //- Short textual description card
+        .col-md-6.mb-4
+          .card.shadow-sm.h-100
+            .card-body
+              h4.card-title.mb-3 Description
+              p.card-text= recipe.description
+      
+      //- ===========================  INGREDIENTS & INSTRUCTIONS  ===========================
+      .row
+        //- ---- Ingredients list ----
+        .col-md-4.mb-4
+          .card.shadow-sm.h-100
+            .card-header.bg-primary.text-white
+              h4.card-title.mb-0 Ingredients
+            .card-body
+              ul.ingredients-list.list-unstyled
+                //- Split by newline so authors can enter one ingredient per line
+                each ingredient in recipe.ingredients.split('\n')
+                  if ingredient.trim()
+                    li
+                      i.fas.fa-check-circle.text-primary.me-2
+                      | #{ingredient.trim()}
+        
+        //- ---- Step-by-step instructions ----
+        .col-md-8.mb-4
+          .card.shadow-sm.h-100
+            .card-header.bg-primary.text-white
+              h4.card-title.mb-0 Instructions
+            .card-body
+              ol.instructions-list
+                each instruction in recipe.instructions.split('\n')
+                  if instruction.trim()
+                    li #{instruction.trim()}
+      
+      //- ===========================  VISITOR RATING FORM  ===========================
+      if user && recipe.user_id !== user.id
+        .row.mt-4
+          .col-md-6.offset-md-3
+            .card.shadow-sm
+              .card-header.bg-primary.text-white
+                h5.card-title.mb-0 Rate this Recipe
+              .card-body
+                form.text-center(action=`/recipes/${recipe.id}/rate`, method="POST")
+                  .rating-input.mb-3
+                    each val in [1, 2, 3, 4, 5]
+                      i.far.fa-star.fa-2x.rating-star.me-1(data-value=val)
+                    //- Hidden field is updated by JS when a star is clicked
+                    input(type="hidden", name="rating", value="0")
+                  button.btn.btn-primary(type="submit") Submit Rating
+      
+      //- ===========================  AUTHOR CARD  ===========================
+      .row.mt-4
+        .col-md-4.offset-md-4.text-center
+          .card.shadow-sm
+            .card-body
+              img.rounded-circle.mb-2(
+                src=`/${recipe.profile_image}`,
+                alt=recipe.username,
+                width="80",
+                height="80")
+              h5= recipe.username
+              p.text-muted Recipe Author
+              a.btn.btn-sm.btn-outline-primary(href="#") View All Recipes
+
+      //- ===========================  COMMENTS  ===========================
+      .row.mt-4
+        .col-md-8.offset-md-2
+          .card.shadow-sm
+            .card-header.bg-primary.text-white
+              h5.card-title.mb-0 
+                i.fas.fa-comments.me-2
+                | Comments (#{comments ? comments.length : 0})
+            
+            //- --- Leave a comment (only when logged in) ---
+            if user
+              .card-body.border-bottom
+                form(action=`/recipes/${recipe.id}/comment`, method="POST")
+                  .mb-3
+                    label.form-label(for="content") Add a Comment
+                    textarea.form-control#content(
+                      name="content",
+                      rows="3",
+                      placeholder="Share your thoughts about this recipe...",
+                      required)
+                  button.btn.btn-primary(type="submit") Post Comment
+            
+            //- --- List existing comments ---
+            if comments && comments.length > 0
+              ul.list-group.list-group-flush
+                each comment in comments
+                  li.list-group-item
+                    .d-flex
+                      img.rounded-circle.me-3(
+                        src=`/${comment.profile_image}`,
+                        width="40",
+                        height="40",
+                        alt=comment.username)
+                      .flex-grow-1
+                        .d-flex.justify-content-between.align-items-start
+                          div
+                            h6.mb-0= comment.username
+                            small.text-muted= new Date(comment.created_at).toLocaleString()
+                          //- Show delete icon if current user is comment author OR recipe owner
+                          if user && (user.id === comment.user_id || user.id === recipe.user_id)
+                            form(action=`/recipes/comment/${comment.id}/delete`, method="POST")
+                              input(type="hidden", name="recipe_id", value=recipe.id)
+                              button.btn.btn-sm.text-danger(type="submit", title="Delete comment")
+                                i.fas.fa-times
+                        p.mt-2.mb-0= comment.content
+            else
+              .card-body.text-center.py-4
+                p.text-muted No comments yet. Be the first to comment!
+    else
+      //- 404-style fallback for missing recipe
+      .alert.alert-warning
+        h2.text-center Recipe not found
+        p.text-center The recipe you're looking for might have been removed or doesn't exist.
+        .text-center.mt-4
+          a.btn.btn-primary(href="/explore") Explore Recipes
+
+block scripts
+  //- Inline JS: activate client-side rating stars after DOM load
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize rating system if it exists
+      initializeRatingSystem();
+    });

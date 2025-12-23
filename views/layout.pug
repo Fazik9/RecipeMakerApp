@@ -1,0 +1,201 @@
+//! -------------------------------------------------------------
+//- layout.pug
+//- -------------------------------------------------------------
+//- Base template for every page on RecipeShare.
+//- It builds the HTML structure, links to global CSS/JS, and sets up:
+//-   • A responsive header with navigation and user links
+//-   • Flash message alerts for feedback
+//-   • A main content area that page-specific templates fill in
+//-   • A consistent footer with site info and social links
+//- 
+//- Available variables:
+//-   • title   – Text shown in the browser tab (e.g., "Home", "Explore")
+//-   • user    – The logged-in user object (or null if nobody's signed in)
+//-   • success – A one-time success message to display in an alert
+//-   • error   – A one-time error message to display in an alert
+//-
+//- The actual Pug structure and class names stay the same;
+//- these comments simply explain what each part does.
+
+doctype html
+//- The root <html> element, with language set for accessibility and SEO.
+html(lang="en")
+  head
+    //- Ensure characters like emojis and accents render correctly.
+    meta(charset="UTF-8")
+    //- Make sure the page scales properly on mobile devices.
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    //- Dynamically set the page title, appending the site name.
+    title #{title} - Recipe Sharing Platform
+
+    //- ----------------------------------------------------------------
+    //- Stylesheets
+    //- ----------------------------------------------------------------
+    //- Load Bootstrap's core CSS for grid, utilities, and components.
+    link(
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    )
+    //- Include Font Awesome for icon support (stars, social icons, etc.).
+    link(
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    )
+    //- Our custom CSS file where we override Bootstrap and add site styles.
+    link(rel="stylesheet", href="/css/style.css")
+
+  body
+    //- ----------------------------------------------------------------
+    //- Navigation Bar
+    //- ----------------------------------------------------------------
+    //- A responsive navbar that collapses on mobile screens.
+    nav.navbar.navbar-expand-lg.navbar-dark.bg-primary
+      .container
+        //- Site logo and home link.
+        a.navbar-brand(href="/")
+          i.fas.fa-utensils.me-2
+          | RecipeShare
+
+        //- Button that toggles the collapsed menu on small viewports.
+        button.navbar-toggler(
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        )
+          span.navbar-toggler-icon
+
+        //- The collapsible menu area.
+        #navbarNav.collapse.navbar-collapse
+          ul.navbar-nav.me-auto
+            //- Always show Home and Explore links.
+            li.nav-item
+              a.nav-link(href="/") Home
+            li.nav-item
+              a.nav-link(href="/explore") Explore
+            //- Only show "Create Recipe" if someone is logged in.
+            if user
+              li.nav-item
+                a.nav-link(href="/recipes/new") Create Recipe
+
+          //- ----------------------------------------------------------------
+          //- Recipe Search Form
+          //- ----------------------------------------------------------------
+          //- A GET form that sends the query as "q" to /search.
+          form.d-flex.me-2(action="/search", method="GET")
+            input.form-control.me-2(
+              type="search"
+              name="q"
+              placeholder="Search recipes..."
+              required
+            )
+            button.btn.btn-light(type="submit")
+              i.fas.fa-search
+
+          //- ----------------------------------------------------------------
+          //- User Authentication Links
+          //- ----------------------------------------------------------------
+          ul.navbar-nav.ms-auto
+            //- If logged in, show avatar, username, and a dropdown menu.
+            if user
+              li.nav-item.dropdown
+                a.nav-link.dropdown-toggle(
+                  href="#"
+                  data-bs-toggle="dropdown"
+                )
+                  //- Display the user's profile picture and name.
+                  img.rounded-circle.me-1(
+                    src=`/${user.profile_image}`
+                    width="24"
+                    height="24"
+                    alt=user.username
+                  )
+                  | #{user.username}
+                ul.dropdown-menu.dropdown-menu-end
+                  li
+                    a.dropdown-item(href="/users/profile") My Profile
+                  li
+                    a.dropdown-item(href="/users/edit-profile") Edit Profile
+                  li
+                    a.dropdown-item(href="/users/logout") Logout
+            //- If nobody's logged in, show links to log in or register.
+            else
+              li.nav-item
+                a.nav-link(href="/users/login") Login
+              li.nav-item
+                a.nav-link(href="/users/register") Register
+
+    //- ----------------------------------------------------------------
+    //- Flash Message Alerts
+    //- ----------------------------------------------------------------
+    //- When the server sets a success or error message, display it at the top.
+    if success
+      .container.mt-3
+        .alert.alert-success.alert-dismissible.fade.show
+          | #{success}
+          //- A small button to manually close the alert.
+          button.btn-close(type="button", data-bs-dismiss="alert")
+    if error
+      .container.mt-3
+        .alert.alert-danger.alert-dismissible.fade.show
+          | #{error}
+          button.btn-close(type="button", data-bs-dismiss="alert")
+
+    //- ----------------------------------------------------------------
+    //- Main Content Area
+    //- ----------------------------------------------------------------
+    //- This is where each page's unique content gets injected.
+    //- Example: the recipe list, recipe detail, login form, etc.
+    main.py-4
+      block content
+
+    //- ----------------------------------------------------------------
+    //- Footer
+    //- ----------------------------------------------------------------
+    //- A dark footer that stays at the bottom of the page.
+    footer.bg-dark.text-light.py-4.mt-auto
+      .container
+        .row
+          //- About section
+          .col-md-4.mb-3
+            h5 RecipeShare
+            p Share your culinary creations with the world
+          //- Quick navigation links
+          .col-md-4.mb-3
+            h5 Quick Links
+            ul.list-unstyled
+              li
+                a.text-light(href="/") Home
+              li
+                a.text-light(href="/explore") Explore Recipes
+              li
+                a.text-light(href="/about") About Us
+          //- Social media connections
+          .col-md-4.mb-3
+            h5 Connect With Us
+            ul.list-unstyled.social-icons
+              li
+                a.text-light(href="#")
+                  i.fab.fa-facebook.me-2
+                  | Facebook
+              li
+                a.text-light(href="#")
+                  i.fab.fa-instagram.me-2
+                  | Instagram
+              li
+                a.text-light(href="#")
+                  i.fab.fa-twitter.me-2
+                  | Twitter
+        .row.mt-3
+          .col
+            p.text-center CSC317 Assignment 5 | Recipe Sharing Platform &copy; 2023
+
+    //- ----------------------------------------------------------------
+    //- JavaScript Includes
+    //- ----------------------------------------------------------------
+    //- Bundle bootstrap JS (includes Popper for dropdowns/modals).
+    script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js")
+    //- Our own main.js for form checks, image previews, rating stars, etc.
+    script(src="/js/main.js")
+
+    //- This block lets individual pages add extra scripts if needed.
+    block scripts

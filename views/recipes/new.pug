@@ -1,0 +1,164 @@
+extends ../layout
+
+block content
+  //- ===== Outer spacing & centering =====
+  .container.py-5
+    .row.justify-content-center
+      .col-md-10
+        //- ===== Card wrapper for visual emphasis =====
+        .card.shadow-sm
+          .card-header.bg-primary.text-white
+            h4.card-title.mb-0 Create New Recipe 
+
+          //- ======================= FORM =======================
+          .card-body
+            //- enctype must be multipart for image upload
+            form(
+              action="/recipes/new",
+              method="POST",
+              enctype="multipart/form-data",
+              class="needs-validation",
+              novalidate)   //- HTML5 validation overrides handled by Bootstrap
+
+              //- ----------  TITLE + CATEGORY  ----------
+              .row
+                //- Recipe Title ---------------------------
+                .col-md-6.mb-3
+                  label.form-label(for="title") Recipe Title *
+                  input.form-control#title(
+                    type="text",
+                    name="title",
+                    value=formData && formData.title || '',
+                    required)
+                  //- Show server error if provided
+                  if errors && errors.title
+                    small.text-danger= errors.title
+
+                //- Category (select) ----------------------
+                .col-md-6.mb-3
+                  label.form-label(for="category") Category *
+                  select.form-select#category(
+                    name="category",
+                    required)
+                    //- Default blank option
+                    option(value="", selected=!formData || !formData.category) Select a category
+                    //- Render common categories (could come from DB in real app)
+                    each category in [
+                      'Appetizers', 'Main Dishes', 'Desserts', 'Breakfast', 'Lunch',
+                      'Dinner', 'Snacks', 'Soups', 'Salads', 'Beverages',
+                      'Baked Goods', 'Vegan', 'Vegetarian', 'Gluten-Free', 'Low-Carb']
+                      option(
+                        value=category,
+                        selected=formData && formData.category === category)= category
+                  if errors && errors.category
+                    small.text-danger= errors.category
+
+              //- ----------  DESCRIPTION  ----------
+              .mb-3
+                label.form-label(for="description") Description *
+                textarea.form-control#description(
+                  name="description",
+                  rows="3",
+                  required)= formData && formData.description || ''
+                if errors && errors.description
+                  small.text-danger= errors.description
+                else
+                  small.text-muted Briefly describe your recipe (max 500 characters)
+              
+              //- ----------  PREP / COOK / SERVINGS  ----------
+              .row
+                //- Prep Time -----------------------------
+                .col-md-4.mb-3
+                  label.form-label(for="prep_time") Preparation Time (minutes) *
+                  input.form-control#prep_time(
+                    type="number",
+                    name="prep_time",
+                    min="1",
+                    value=formData && formData.prep_time || '',
+                    required)
+                  if errors && errors.prep_time
+                    small.text-danger= errors.prep_time
+                
+                //- Cook Time -----------------------------
+                .col-md-4.mb-3
+                  label.form-label(for="cook_time") Cooking Time (minutes) *
+                  input.form-control#cook_time(
+                    type="number",
+                    name="cook_time",
+                    min="0",
+                    value=formData && formData.cook_time || '',
+                    required)
+                  if errors && errors.cook_time
+                    small.text-danger= errors.cook_time
+
+                //- Servings ------------------------------
+                .col-md-4.mb-3
+                  label.form-label(for="servings") Servings *
+                  input.form-control#servings(
+                    type="number",
+                    name="servings",
+                    min="1",
+                    value=formData && formData.servings || '',
+                    required)
+                  if errors && errors.servings
+                    small.text-danger= errors.servings
+              
+              //- ----------  IMAGE UPLOAD  ----------
+              .mb-3
+                label.form-label(for="image") Recipe Image
+                input.form-control#image(
+                  type="file",
+                  name="image",
+                  accept="image/*",
+                  data-preview-target="image-preview")   //- Hook for JS live preview
+                if errors && errors.image
+                  small.text-danger= errors.image
+                else
+                  small.text-muted Upload a photo of your dish (max 5 MB)
+                //- Live preview area (hidden until JS sets src)
+                .mt-2
+                  img#image-preview.img-fluid.rounded(
+                    src="",
+                    alt="Recipe preview",
+                    style="max-height: 200px; display: none;")
+              
+              //- ----------  INGREDIENTS  ----------
+              .mb-3
+                label.form-label(for="ingredients") Ingredients *
+                textarea.form-control#ingredients(
+                  name="ingredients",
+                  rows="6",
+                  required,
+                  placeholder="Enter each ingredient on a new line")= formData && formData.ingredients || ''
+                if errors && errors.ingredients
+                  small.text-danger= errors.ingredients
+                else
+                  small.text-muted List each ingredient on a new line
+
+              //- ----------  INSTRUCTIONS  ----------
+              .mb-3
+                label.form-label(for="instructions") Instructions *
+                textarea.form-control#instructions(
+                  name="instructions",
+                  rows="8",
+                  required,
+                  placeholder="Enter each step on a new line")= formData && formData.instructions || ''
+                if errors && errors.instructions
+                  small.text-danger= errors.instructions
+                else
+                  small.text-muted List each step on a new line
+              
+              //- ----------  FORM ACTION BUTTONS  ----------
+              .d-flex.justify-content-between.mt-4
+                a.btn.btn-outline-secondary(href="javascript:history.back()") Cancel
+                button.btn.btn-primary(type="submit")
+                  i.fas.fa-save.me-1
+                  | Save Recipe
+
+block scripts
+  //- Client-side helper: live image preview on file select
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize image preview
+      initializeImagePreview();
+    });

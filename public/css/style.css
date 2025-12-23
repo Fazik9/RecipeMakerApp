@@ -1,0 +1,224 @@
+/* ================================================================================
+   Main Page Layout & Typography
+   --------------------------------------------------------------------------------
+   This section establishes the core look and behavior of the entire site:
+   1. Sets a clean, widely supported sans‑serif font stack for readability.
+   2. Uses Flexbox on the body to stack header, main content, and footer vertically.
+   3. Ensures the page always fills at least the full viewport height so the footer
+      stays at the bottom, even on short pages.
+   ================================================================================ */
+   body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+
+/* ----------------------------------------------------------------------------
+   Make <main> grow to fill available space between header and footer,
+   so the footer stays pinned to the bottom if content is short.
+   ---------------------------------------------------------------------------- */
+main {
+  flex: 1;
+}
+
+/* ================================================================================
+   Utility Helper Classes
+   --------------------------------------------------------------------------------
+   These small helper rules can be mixed into any element to tweak its behavior:
+   - .object-cover: Scale an image or video to completely fill its container
+     without stretching, cropping the excess.
+   ================================================================================ */
+   .object-cover {
+  object-fit: cover;
+}
+
+/* ================================================================================
+   Navigation Bar Branding
+   --------------------------------------------------------------------------------
+   Give extra emphasis to the brand/logo text inside the navbar:
+   - Use a bold font weight to make the site name stand out.
+   ================================================================================ */
+.navbar-brand {
+  font-weight: bold;
+}
+
+
+/* ================================================================================
+   Hero Section Spacing
+   --------------------------------------------------------------------------------
+   Add roomy vertical padding above and below the hero banner:
+   - 4rem top and bottom ensures the intro area feels open on large screens.
+   ================================================================================ */
+.hero-section {
+  padding: 4rem 0;
+}
+
+/* ================================================================================
+   Recipe Cards Interaction
+   --------------------------------------------------------------------------------
+   These rules bring the recipe preview cards to life:
+   1. Smoothly animate position and shadow on hover for a “lift” effect.
+   2. Hide overflow so images don’t spill beyond the card.
+   3. Constrain the top image height and crop it neatly.
+   ================================================================================ */
+   .recipe-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.recipe-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+
+/* ================================================================================
+   Category Cards Highlight
+   --------------------------------------------------------------------------------
+   Similar lift effect for category tiles, plus a color change on hover:
+   - Translate up by 5px for consistency with recipe cards.
+   - Change text color to the primary blue when hovered.
+   ================================================================================ */
+.category-card {
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  color: #0d6efd;
+}
+
+
+/* ================================================================================
+   Rating Stars Color
+   --------------------------------------------------------------------------------
+   Make any Font Awesome star or half-star icons golden to indicate rating.
+   ================================================================================ */
+.rating .fa-star,
+.rating .fa-star-half-alt {
+  color: #ffc107;
+}
+
+/* ================================================================================
+   Recipe Detail Image & Lists
+   --------------------------------------------------------------------------------
+   On the recipe detail page:
+   1. Give the main image a tall, fixed height and rounded corners.
+   2. Style ingredient and instruction lists with comfortable spacing
+      and subtle dividing lines.
+   ================================================================================ */
+.recipe-detail-img {
+  height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.ingredients-list li,
+.instructions-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ingredients-list li:last-child,
+.instructions-list li:last-child {
+  border-bottom: none;
+}
+
+/* ================================================================================
+   User Profile Header
+   --------------------------------------------------------------------------------
+   Style the profile banner area:
+   - Light gray background to separate from page content.
+   - Generous vertical padding and bottom margin for breathing room.
+   - Rounded corners for a softer look.
+   ================================================================================ */
+.profile-header {
+  background-color: #f8f9fa;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+}
+
+/* ================================================================================
+   Profile Image Appearance
+   --------------------------------------------------------------------------------
+   Make the user’s profile photo stand out:
+   - Fixed square size with circular crop.
+   - White border and subtle shadow give a “floating” portrait effect.
+   ================================================================================ */
+.profile-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ================================================================================
+   Form Field Labels
+   --------------------------------------------------------------------------------
+   Slightly bold the text labels on form inputs for clarity and emphasis.
+   ================================================================================ */
+.form-label {
+  font-weight: 500;
+}
+
+/* ================================================================================
+   Footer Layout & Links
+   --------------------------------------------------------------------------------
+   1. Push the footer to the bottom when content is short.
+   2. Remove underlines from links by default, add them back on hover
+      for a clear interactive cue.
+   3. Space out social icon list items for breathing room.
+   ================================================================================ */
+footer {
+  margin-top: auto;
+}
+
+footer a {
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.social-icons li {
+  margin-bottom: 8px;
+}
+
+/* ================================================================================
+   Responsive Mobile Tweaks
+   --------------------------------------------------------------------------------
+   Adjust key elements for smaller screens (below 768px):
+   1. Center text in hero and profile header for better balance.
+   2. Reduce padding in hero to keep it from feeling too tall.
+   3. Shrink recipe images and profile pics to fit mobile layouts.
+   ================================================================================ */
+@media (max-width: 768px) {
+  .hero-section {
+    text-align: center;
+    padding: 2rem 0;
+  }
+  
+  .recipe-detail-img {
+    height: 250px;
+  }
+  
+  .profile-header {
+    text-align: center;
+  }
+  
+  .profile-image {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+  }
+}
